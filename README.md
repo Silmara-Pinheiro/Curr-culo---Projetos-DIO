@@ -21,157 +21,125 @@ Descrição: O projeto “Os Pilares e a Gestão das Finanças” foi implementa
 Link do projeto: https://notebooklm.google.com/notebook/7ea3dcea-be3f-4679-8439-5ff1849c9bf9?authuser=1
 
 
+---
+
 
 ##### 🔗  Desafio: Conversando por Voz Com o ChatGPT Utilizando Whisper (OpenAI) e Python
 
-Resumo do projeto
-Protótipo de conversa por voz multilíngue que integra Whisper para transcrição, ChatGPT para geração de respostas e gTTS para síntese. O repositório contém código executável, exemplos de entrada/saída e instruções passo a passo para reproduzir a demo em poucos minutos.
+📌 Resumo
+Protótipo de conversa por voz multilíngue que integra:
+- Whisper (OpenAI) para transcrição de áudio em texto.
+- ChatGPT (OpenAI API) para geração de respostas inteligentes.
+- gTTS (Google Text-to-Speech) para síntese de voz.
+O repositório contém código executável, exemplos de entrada/saída e instruções passo a passo para reproduzir a demo em poucos minutos.
 
-Checklist: 
-- README principal com objetivo do projeto, arquitetura e instruções de uso.
-- Guia de instalação (dependências, versão do Python, instalação do ffmpeg, variáveis de ambiente como OPENAI_API_KEY).
-- Como rodar (comandos exatos para executar em modo batch e modo tecla-Enter).
-- Estrutura do código (descrição das pastas e arquivos principais).
-- Exemplos: arquivos de áudio de entrada (curtos), transcrições geradas e respostas do ChatGPT em texto.
-- Evidências visuais: screenshots da execução, GIFs mostrando gravação/execução, trechos do terminal com logs.
-- Arquitetura: diagrama simples (PNG) mostrando fluxo: microfone → Whisper → ChatGPT → gTTS.
+🚀 Objetivo
+Demonstrar como combinar ASR (Automatic Speech Recognition) e LLMs (Large Language Models) para criar uma experiência de comunicação por voz em múltiplos idiomas.
 
-Bash: pip install openai sounddevice soundfile gtts pydub e instale ffmpeg no sistema para pydub
-Script: (voice_chat_whisper_gpt_keypress.py)
+🔧 Requisitos
+Liste de forma clara as versões mínimas necessárias:
+- Python (ex.: 3.9+)
+- Bibliotecas (já no requirements.txt)
+- Sistema operacional testado (Linux, Windows, Mac)
 
-Phyton: 
-import os
-import threading
-import queue
-import openai
-import sounddevice as sd
-import soundfile as sf
-from gtts import gTTS
-from pydub import AudioSegment
-from pydub.playback import play
+🛠️ Arquitetura
+Fluxo principal:
+🎤 Microfone → Whisper → ChatGPT → gTTS → 🔊 Saída de áudio
 
-# ---------- Configurações ----------
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise RuntimeError("Defina a variável de ambiente OPENAI_API_KEY com sua chave da OpenAI.")
-openai.api_key = OPENAI_API_KEY
+📂 Estrutura do Projeto 
+├── README.md
+├── requirements.txt
+├── voice_chat_whisper_gpt_keypress.py
+├── examples/
+│   ├── input_example.wav
+│   ├── transcript_example.txt
+│   └── response_example.mp3
+└── docs/
+    ├── arquitetura.png
+    ├── screenshot_execucao.png
+    └── demo.gif
 
-AUDIO_FILENAME = "input.wav"
-RESPONSE_AUDIO = "response.mp3"
-SAMPLE_RATE = 16000
-CHANNELS = 1
-BLOCKSIZE = 1024
 
-# ---------- Gravação até tecla ----------
-def record_until_enter(filename: str = AUDIO_FILENAME, samplerate: int = SAMPLE_RATE, channels: int = CHANNELS):
-    """Grava do microfone até o usuário pressionar Enter e salva em filename (WAV)."""
-    q = queue.Queue()
+⚙️ Instalação
+- Clone o repositório:
+git clone https://github.com/seuusuario/voice-chat-whisper-gpt.git
+cd voice-chat-whisper-gpt
+- Instale dependências:
+pip install -r requirements.txt
+- Instale ffmpeg (necessário para pydub):
+- Linux: sudo apt install ffmpeg
+- Mac: brew install ffmpeg
+- Windows: baixe em ffmpeg.org
+- Configure a variável de ambiente:
+export OPENAI_API_KEY="sua_chave_aqui"
 
-    def callback(indata, frames, time_info, status):
-        if status:
-            print("Aviso de áudio:", status)
-        q.put(indata.copy())
 
-    print("Pressione Enter para iniciar a gravação.")
-    input("Aperte Enter para começar a gravar...")
-    print("Gravando. Pressione Enter novamente para parar.")
+▶️ Como Rodar
+Modo tecla Enter
+python voice_chat_whisper_gpt_keypress.py
 
-    # Abrir arquivo para escrita
-    with sf.SoundFile(filename, mode='w', samplerate=samplerate, channels=channels, subtype='PCM_16') as file:
-        with sd.InputStream(samplerate=samplerate, channels=channels, blocksize=BLOCKSIZE, callback=callback):
-            stop_thread = False
+- Pressione Enter para iniciar a gravação.
+- Pressione Enter novamente para parar.
+Modo batch (arquivo pronto)
+python voice_chat_whisper_gpt_keypress.py input.wav
 
-            def stopper():
-                nonlocal stop_thread
-                input()  # aguarda Enter para parar
-                stop_thread = True
 
-            t = threading.Thread(target=stopper, daemon=True)
-            t.start()
+📊 Exemplos
+- Entrada (áudio curto): examples/input_example.wav
+- Transcrição (Whisper): examples/transcript_example.txt
+- Resposta (ChatGPT): exibida no terminal.
+- Saída em voz (gTTS): examples/response_example.mp3
 
-            while not stop_thread:
-                try:
-                    data = q.get(timeout=0.1)
-                except queue.Empty:
-                    continue
-                file.write(data)
+📸 Evidências Visuais
+- Screenshots da execução no terminal.
+- GIF mostrando gravação e resposta.
+- Logs de transcrição e resposta.
 
-    print(f"Gravação finalizada e salva em {filename}")
+🔮 Próximos Passos
+- Suporte a streaming em tempo real.
+- Integração com interfaces gráficas (Tkinter, PyQt).
+- Suporte a outras vozes além do gTTS.
+- Exemplos em outros idiomas (inglês, espanhol, francês).
 
-# ---------- OpenAI Whisper transcrição ----------
-def transcribe_with_whisper(filename: str = AUDIO_FILENAME, translate: bool = False):
-    with open(filename, "rb") as audio_file:
-        if translate:
-            transcript = openai.Audio.transcribe("whisper-1", audio_file, translate=True)
-        else:
-            transcript = openai.Audio.transcribe("whisper-1", audio_file)
-    text = transcript.get("text") if isinstance(transcript, dict) else str(transcript)
-    language = transcript.get("language") if isinstance(transcript, dict) else None
-    return text, language
 
-# ---------- ChatGPT ----------
-def chat_with_gpt(user_text: str, detected_lang: str | None = None, system_prompt: str | None = None):
-    system_msg = {"role": "system", "content": system_prompt or "Você é um assistente útil e educado."}
-    if detected_lang:
-        system_msg["content"] += f" Responda no idioma detectado: {detected_lang}."
-    messages = [system_msg, {"role": "user", "content": user_text}]
-    resp = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages, temperature=0.7)
-    answer = resp["choices"][0]["message"]["content"].strip()
-    return answer
+Abrir o arquivo para a escrita: 
+    def stopper():
+        nonlocal stop_thread
+        input()  # aguarda Enter para parar
+        stop_thread = True
 
-# ---------- gTTS e reprodução ----------
-def synthesize_with_gtts(text: str, lang: str = "pt", out_file: str = RESPONSE_AUDIO):
-    tts = gTTS(text=text, lang=lang)
-    tts.save(out_file)
-    return out_file
+    t = threading.Thread(target=stopper, daemon=True)
+    t.start()
 
-def play_audio_file(path: str):
-    audio = AudioSegment.from_file(path, format="mp3")
-    play(audio)
+    while not stop_thread:
+        try:
+            data = q.get(timeout=0.1)
+        except queue.Empty:
+            continue
+        file.write(data)
 
-# ---------- Mapeamento simples de idioma para gTTS ----------
-LANG_MAP = {
-    "pt": "pt",
-    "pt-BR": "pt",
-    "en": "en",
-    "es": "es",
-    "fr": "fr",
-    # adicione conforme necessário
-}
 
-def map_lang_for_gtts(code: str | None):
-    if not code:
-        return "pt"
-    code = code.lower()
-    return LANG_MAP.get(code, code.split("-")[0])
+    print(f"Gravação finalizada e salva em {filename}") ---------- OpenAI Whisper transcrição ---------- def transcribe_with_whisper(nome do arquivo: str = AUDIO_FILENAME, traduzir: bool = False): com open (nome do arquivo, "rb") como audio_file: se traduzir: Transcrição = OpenAI. Audio.transcribe("whisper-1", audio_file, traduz=Verdadeiro) Caso contrário: Transcrição = OpenAI. Audio.transcribe ("whisper-1", audio_file) text = transcript.get("text") se isinstance(transcript, dict) else str(transcript) language = transcript.get("language") se isinstance(transcript, dict) else None Retorne texto, idioma
+    
+---------- ChatGPT ---------- def chat_with_gpt(user_text: força, detected_lang: força | Nenhum = Nenhum, system_prompt: força | Nenhum = Nenhum): system_msg = {"role": "system", "content": system_prompt or "Você é um assistente útil e educado."} Se detected_lang: system_msg["content"] += f" Responda no idioma detectado: {detected_lang}." Mensagens = [system_msg, {"Função": "Usuário", "Conteúdo": user_text}] RESP = OpenAI. ChatCompletion.create(model="gpt-3.5-turbo", messages=messages, temperature=0.7) resposta = resp["escolhas"][0]"mensagem"]["conteúdo"].strip() responder
 
-# ---------- Fluxo principal ----------
-def main():
-    # 1) Gravar até Enter
-    record_until_enter(AUDIO_FILENAME)
+---------- gTTS e reprodução ---------- def synthesize_with_gtts(texto: str, lang: str="pt", out_file:p=RESPONSE_AUDIO): tts = gTTS(texto=texto, lang=lang) tts.save(out_file) retorno out_file
+def play_audio_file(caminho: força): áudio = AudioSegment.from_file(caminho, format="mp3") Play (áudio)
+---------- Mapeamento simples de idioma para gTTS ---------- LANG_MAP = { "pt": "pt", "pt-BR": "pt", "en": "en", "es": "es", "fr": "fr", # adicione conforme necessário }
+def map_lang_for_gtts(código: str  Nenhum): Se não for código: Retorno "PT" code = code.lower() return LANG_MAP.get(code, code.split("-")[0])
+---------- Fluxo principal ---------- def main(): # 1) Gravar até Enter record_until_enter(AUDIO_FILENAME)
 
-    # 2) Transcrever com Whisper
-    print("Enviando áudio para transcrição (Whisper)...")
-    text, lang = transcribe_with_whisper(AUDIO_FILENAME, translate=False)
-    print("Transcrição:", text)
-    if lang:
-        print("Idioma detectado:", lang)
+Transcrever com Whisper
+print("Enviando áudio para transcrição (Whisper)...") text, lang = transcribe_with_whisper(AUDIO_FILENAME, translate=False) print("Transcrição:", text) if lang: print("Idioma detectado:", lang)
 
-    # 3) ChatGPT
-    print("Enviando texto ao ChatGPT...")
-    system_prompt = "Você é um assistente útil. Responda de forma clara e objetiva."
-    chat_response = chat_with_gpt(text, detected_lang=lang, system_prompt=system_prompt)
-    print("Resposta do ChatGPT:", chat_response)
+ChatGPT
+print("Enviando texto ao ChatGPT...") system_prompt = "Você é um assistente útil. Responda de forma clara e objetiva." chat_response = chat_with_gpt(text, detected_lang=lang, system_prompt=system_prompt) print("Resposta do ChatGPT:", chat_response)
 
-    # 4) Sintetizar com gTTS
-    gtts_lang = map_lang_for_gtts(lang)
-    print(f"Sintetizando resposta em '{gtts_lang}' com gTTS...")
-    synthesize_with_gtts(chat_response, lang=gtts_lang, out_file=RESPONSE_AUDIO)
+Sintetizar com gTTS
+gtts_lang = map_lang_for_gtts(lang) print(f"Sintetizando resposta em '{gtts_lang}' com gTTS...") synthesize_with_gtts(chat_response, lang=gtts_lang, out_file=RESPONSE_AUDIO)
 
-    # 5) Reproduzir
-    print("Reproduzindo resposta...")
-    play_audio_file(RESPONSE_AUDIO)
-    print("Concluído.")
+Reproduzir
+print("Reproduzindo resposta...") play_audio_file(RESPONSE_AUDIO) print("Concluído.")
 
 
 

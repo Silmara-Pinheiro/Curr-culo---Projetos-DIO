@@ -173,9 +173,6 @@ def main():
     play_audio_file(RESPONSE_AUDIO)
     print("Concluído.")
 
-if __name__ == "__main__":
-    main()
-
 
 
 

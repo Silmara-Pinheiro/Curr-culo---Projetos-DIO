@@ -1,4 +1,4 @@
-# Currículo---Projetos-DIO
+# Currículo - Projetos DIO
 Projeto para desenvolvimento e versionamento do meu CV
 
 ## 📄 Projeto Currículo

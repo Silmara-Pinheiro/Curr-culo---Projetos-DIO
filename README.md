@@ -1,4 +1,4 @@
-# Currículo - Projetos DIO
+# Currículo - Projetos DIO - CURSO:GENAI & DADOS
 Projeto para desenvolvimento e versionamento do meu CV
 
 ## 📄 Projeto Currículo
